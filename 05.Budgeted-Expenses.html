@@ -1352,7 +1352,7 @@ function adjustRowSpacing05(dir){
 })();
 
 /* ============================================================
-   DOMContentLoaded — รับข้อมูลจาก 01 และ auto-load จาก Google Sheet
+   DOMContentLoaded — รับข้อมูลจาก 01 และ auto-load จาก  Sheet
 ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   // courseData จาก sessionStorage (ส่งมาจาก passData() ใน 01)
@@ -1366,10 +1366,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // เติม meta fields ทันที
   _prefillMeta05(cd);
 
-  // ถ้ามี no → auto-load จาก Google Sheet
+  // ถ้ามี no → auto-load จาก  Sheet
   const no = (cd.no || '').trim();
   if (no) {
-    _showLoader05('🔍 ค้นหาเลขที่หลักสูตร ' + no + ' ใน Google Sheets...');
+    _showLoader05('🔍 ค้นหาเลขที่หลักสูตร ' + no + ' ใน  Sheets...');
     _autoLoadGs05(no, cd);
   }
 
@@ -1560,7 +1560,7 @@ function putSavedSlots(arr) {
 /* ============================================================
    GOOGLE SHEET API
 ============================================================ */
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbySJROnBMkxFBNyPvET3DC5ihdCz03OPzvi2xXm6cMQpoPFsi2pAiTQAQIVSDUwQNVZ5w/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw2r0Ysc8MUAIYhFI4cC86DC0u5j-zNSt76DLS17nvS97L7Oa6pC4_JOpcP9uyf4tIBKQ/exec';
 
 async function gsApi(action, data, no) {
   // GET สำหรับ read, POST สำหรับ write
