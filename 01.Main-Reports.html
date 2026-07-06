@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบรายงานการฝึกอบรม</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink:     #0f1923;
+  --ink-mid: #2c3e50;
+  --ink-soft:#5a6a7a;
+  --paper:   #f5f2ee;
+  --white:   #ffffff;
+  --accent:  #c8922a;
+  --accent2: #1a6fa8;
+  --accent-light: #fdf3e2;
+  --border:  #ddd8d0;
+  --shadow:  0 8px 32px rgba(15,25,35,0.10);
+  --shadow-lg: 0 20px 60px rgba(15,25,35,0.15);
+  --radius:  14px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Noto Sans Thai', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── BACKGROUND TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 15% 10%, rgba(200,146,42,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 85% 80%, rgba(26,111,168,0.07) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ── */
+header {
+  position: relative;
+  z-index: 10;
+  background: var(--ink);
+  color: var(--white);
+  padding: 22px 48px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.25);
+}
+.header-icon {
+  width: 42px; height: 42px;
+  background: var(--accent);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.header-text h1 {
+  font-size: 20px;
+  letter-spacing: 0.3px;
+  font-weight: 400;
+}
+.header-text p {
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+.header-badge {
+  margin-left: auto;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+}
+
+/* ── MAIN LAYOUT ── */
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+/* ── SECTION TITLE ── */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.section-label .bar {
+  width: 4px; height: 22px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.section-label h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-mid);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+/* ── COURSE CARD ── */
+.course-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  padding: 36px 40px 32px;
+  margin-bottom: 40px;
+  animation: fadeUp 0.5s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 28px;
+}
+.form-grid .span-2 { grid-column: 1 / -1; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.field label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.field label .licon { font-size: 13px; }
+
+.field input[type="text"],
+.field input[type="date"] {
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  padding: 11px 14px;
+  font-family: 'Noto Sans Thai', sans-serif;
+  font-size: 14.5px;
+  color: var(--ink);
+  background: #fafaf9;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  outline: none;
+  width: 100%;
+}
+.field input:focus {
+  border-color: var(--accent);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(200,146,42,0.12);
+}
+.field input::placeholder { color: #bbb; }
+
+/* date picker style */
+.field input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+/* ── SAVE BAR ── */
+.save-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.btn-save {
+  display: flex; align-items: center; gap: 7px;
+  background: linear-gradient(135deg, var(--ink) 0%, var(--ink-mid) 100%);
+  color: var(--white);
+  border: none;
+  border-radius: 9px;
+  padding: 11px 22px;
+  font-family: 'Noto Sans Thai', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(15,25,35,0.18);
+}
+.btn-save:hover { background: linear-gradient(135deg,#1a2d3f,#2c3e50); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(15,25,35,0.25); }
+.btn-save:active { transform: translateY(0); box-shadow: none; }
+
+.btn-load {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--white);
+  color: var(--ink-mid);
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  padding: 11px 22px;
+  font-family: 'Noto Sans Thai', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+.btn-load:hover { border-color: var(--accent2); color: var(--accent2); transform: translateY(-1px); }
+
+.btn-clear-form {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--white);
+  color: #dc2626;
+  border: 1.5px solid #fca5a5;
+  border-radius: 9px;
+  padding: 11px 18px;
+  font-family: 'Noto Sans Thai', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-clear-form:hover { background: #fef2f2; border-color: #ef4444; transform: translateY(-1px); }
+
+.save-status {
+  font-size: 13px;
+  color: var(--ink-soft);
+  display: flex; align-items: center; gap: 6px;
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.save-status.show { opacity: 1; }
+.save-status .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+/* ── SAVED SLOT LIST ── */
+.saved-slots {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 18px;
+  background: var(--paper);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  animation: fadeUp 0.25s ease both;
+}
+.saved-slots.open { display: flex; }
+
+.slot-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.slot-item:hover { border-color: var(--accent); box-shadow: 0 2px 10px rgba(200,146,42,0.1); }
+.slot-info { flex: 1; }
+.slot-info .slot-name { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.slot-info .slot-meta { font-size: 11.5px; color: var(--ink-soft); margin-top: 2px; }
+.slot-actions { display: flex; gap: 6px; }
+.slot-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-family: 'Noto Sans Thai', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.slot-btn.load { background: var(--accent2); color: white; }
+.slot-btn.load:hover { background: #155d8e; }
+.slot-btn.del { background: #fee2e2; color: #dc2626; }
+.slot-btn.del:hover { background: #fecaca; }
+
+.empty-slot {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 13px;
+  padding: 10px 0;
+}
+
+/* ── REPORT GRID ── */
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  animation: fadeUp 0.5s 0.1s ease both;
+}
+
+.report-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  overflow: hidden;
+}
+.report-btn::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--accent);
+  border-radius: 4px 0 0 4px;
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.2s ease;
+}
+.report-btn:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+.report-btn:hover::before { transform: scaleY(1); }
+
+.report-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.report-text { flex: 1; }
+.report-text .r-num {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 3px;
+}
+.report-text .r-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.35;
+}
+.report-text .r-desc {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  margin-top: 3px;
+}
+.report-arrow {
+  color: var(--border);
+  font-size: 18px;
+  transition: color 0.2s, transform 0.2s;
+}
+.report-btn:hover .report-arrow { color: var(--accent); transform: translateX(4px); }
+
+/* icon bg colors */
+.ic-gold   { background: #fdf3e2; }
+.ic-blue   { background: #e8f4fd; }
+.ic-green  { background: #e8f8f0; }
+.ic-purple { background: #f3eeff; }
+.ic-red    { background: #feeaea; }
+.ic-teal   { background: #e6faf8; }
+.ic-orange { background: #fff3e8; }
+.ic-pink   { background: #fde8f4; }
+.ic-slate  { background: #edf0f5; }
+.ic-brown  { background: #f5ede8; }
+
+/* ── FLOATING TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  background: var(--ink);
+  color: white;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast .t-icon { font-size: 18px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  header { padding: 16px 20px; }
+  main { padding: 28px 16px 60px; }
+  .course-card { padding: 24px 20px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-grid .span-2 { grid-column: 1; }
+  .report-grid { grid-template-columns: 1fr; }
+  .save-bar { flex-direction: column; align-items: stretch; }
+  .save-status { margin-left: 0; }
+}
+
+/* ── LOCKED MODE ── */
+.course-card.locked .save-bar { display: none; }
+.course-card.locked .field input { background: #f5f2ee; color: var(--ink-mid); pointer-events: none; border-color: #e8e4dd; }
+.lock-notice {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #fdf3e2;
+  border: 1px solid #f5c842;
+  border-radius: 8px;
+  margin-top: 20px;
+  font-size: 13px;
+  color: #7c5a0a;
+}
+.lock-notice.show { display: flex; }
+
+/* ── BUDGET PANEL — always show placeholder ── */
+.budget-panel {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  display: block;
+}
+.budget-panel.visible { display: block; }
+.budget-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.budget-panel-header h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-mid);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.budget-panel-header .badge-time {
+  font-size: 11px;
+  color: var(--ink-soft);
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px 10px;
+}
+.budget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+.budget-item {
+  background: var(--paper);
+  border-radius: 8px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent);
+}
+.budget-item.kor { border-left-color: var(--accent2); }
+.budget-item.total {
+  border-left-color: #10b981;
+  background: #f0fdf8;
+  grid-column: 1 / -1;
+}
+.budget-item .b-label {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-bottom: 3px;
+}
+.budget-item .b-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.budget-item.total .b-value { color: #059669; font-size: 18px; }
+.budget-clear {
+  font-size: 11px;
+  color: var(--ink-soft);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.budget-clear:hover { background: var(--paper); }
+
+/* ── SUMMARY GRID (6 หัวข้อ) ── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+.sum-card {
+  background: var(--paper);
+  border-radius: 10px;
+  padding: 12px 16px;
+  border-left: 4px solid var(--accent);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sum-card.green  { border-left-color: #10b981; }
+.sum-card.blue   { border-left-color: #3b82f6; }
+.sum-card.purple { border-left-color: #8b5cf6; }
+.sum-card.red    { border-left-color: #ef4444; }
+.sum-card.teal   { border-left-color: #14b8a6; }
+.sum-card.full   { grid-column: 1 / -1; background: #f0fdf8; border-left-color: #059669; }
+.sum-card .sc-num   { font-size: 10px; font-weight: 700; color: var(--ink-soft); letter-spacing: .5px; text-transform: uppercase; }
+.sum-card .sc-label { font-size: 12.5px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+.sum-card .sc-value { font-size: 18px; font-weight: 700; color: var(--ink); margin-top: 2px; }
+.sum-card.full .sc-value { color: #059669; font-size: 20px; }
+.sum-card .sc-sub   { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
+.sum-card .sc-spk   { font-size: 12px; color: #1d4ed8; font-weight: 600; margin-top: 2px; line-height: 1.5; }
+.sum-card .sc-badge {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  background: #fef3c7; color: #92400e;
+  border-radius: 4px; padding: 1px 7px; margin-top: 3px;
+}
+.sum-card .sc-badge.no-data { background: #f3f4f6; color: #9ca3af; }
+
+.btn-back{padding:6px 14px;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.8);background:transparent;border-radius:6px;font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.btn-back:hover{background:rgba(255,255,255,.1)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-icon">📋</div>
+  <div class="header-text">
+    <h1>ระบบรายงานการฝึกอบรม</h1>
+    <p>TRAINING MANAGEMENT SYSTEM — กปภ.</p>
+  </div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <a class="btn-back" href="training_courses_gfr1.html">← ย้อนกลับ</a>
+  </div>
+</header>
+
+<main>
+
+  <div class="section-label">
+    <div class="bar"></div>
+    <h2>ข้อมูลหลักสูตร</h2>
+  </div>
+
+  <div class="course-card">
+    <div class="form-grid">
+
+      <div class="field span-2">
+        <label><span class="licon">📚</span> ชื่อหลักสูตร</label>
+        <input type="text" id="f_course" placeholder="ระบุชื่อหลักสูตรการฝึกอบรม…">
+      </div>
+
+      <div class="field">
+        <label><span class="licon">🔢</span> รุ่นที่</label>
+        <input type="text" id="f_batch" placeholder="เช่น 1-3/69">
+      </div>
+
+      <div class="field">
+        <label><span class="licon">🆔</span> เลขที่หลักสูตร</label>
+        <input type="text" id="f_no" placeholder="เช่น 01320829" onchange="loadBudgetPanel()" onblur="loadBudgetPanel()">
+      </div>
+
+      <div class="field span-2">
+        <label><span class="licon">📅</span> วันที่จัดอบรม</label>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <input type="date" id="f_date_start" style="flex:1;min-width:140px;border:1.5px solid var(--border);border-radius:9px;padding:11px 14px;font-family:'Noto Sans Thai',sans-serif;font-size:14.5px;color:var(--ink);background:#fafaf9;transition:border-color .2s,box-shadow .2s;outline:none;" onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px rgba(200,146,42,0.12)'" onblur="this.style.borderColor='var(--border)';this.style.boxShadow=''" oninput="syncDateRange()">
+          <span style="color:var(--ink-soft);font-size:13px;white-space:nowrap;">ถึง</span>
+          <input type="date" id="f_date_end" style="flex:1;min-width:140px;border:1.5px solid var(--border);border-radius:9px;padding:11px 14px;font-family:'Noto Sans Thai',sans-serif;font-size:14.5px;color:var(--ink);background:#fafaf9;transition:border-color .2s,box-shadow .2s;outline:none;" onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px rgba(200,146,42,0.12)'" onblur="this.style.borderColor='var(--border)';this.style.boxShadow=''" oninput="syncDateRange()">
+        </div>
+        <div id="date-range-display" style="font-size:12px;color:var(--ink-soft);margin-top:4px;display:none;"></div>
+        <input type="hidden" id="f_date">
+      </div>
+
+      <div class="field">
+        <label><span class="licon">📍</span> สถานที่จัดอบรม</label>
+        <input type="text" id="f_location" placeholder="ชื่อสถานที่ / จังหวัด">
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="section-label" style="margin-top: 8px;">
+    <div class="bar"></div>
+    <h2>รายการสรุป</h2>
+  </div>
+
+  <!-- Summary Panel — 6 หัวข้อจากไฟล์ 05 + 06 -->
+  <div class="budget-panel" id="budget-panel">
+    <div class="budget-panel-header">
+      <h3>📊 สรุปข้อมูลการฝึกอบรม</h3>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="badge-time" id="budget-saved-at"></span>
+        <button class="budget-clear" onclick="clearBudget()">ล้างข้อมูล</button>
+      </div>
+    </div>
+    <div class="summary-grid" id="budget-grid"></div>
+  </div>
+
+    <div class="report-grid" id="report-grid">
+    </div>
+
+</main>
+
+<div class="toast" id="toast">
+  <span class="t-icon" id="toast-icon">✅</span>
+  <span id="toast-msg">บันทึกข้อมูลเรียบร้อย</span>
+</div>
+
+<script>
+/* ──────────────────────────────────────────
+   REPORT DEFINITIONS (แก้ไขรายงาน 06 ให้ลิงก์ไป Sum-Borrow1.html)
+   ────────────────────────────────────────── */
+const REPORTS = [
+  { id: 'r01', num: 'รายงาน 01', name: 'XXXXXXXXXXXXXXXXXXXX', desc: 'XXX',icon: '💰', color: 'ic-gold',   href: '#' },
+  { id: 'r02', num: 'รายงาน 02', name: 'XXXXXXXXXXXXXXXXXXXX', desc: 'XXX',icon: '👥', color: 'ic-blue',   href: '#' },
+  { id: 'r03', num: 'รายงาน 03', name: 'XXXXXXXXXXXXXXXXXXXX', desc: 'XXX',icon: '📊', color: 'ic-green',  href: '#' },
+  { id: 'r04', num: 'รายงาน 04', name: 'XXXXXXXXXXXXXXXXXXXX', desc: 'XXX',icon: '🚌', color: 'ic-purple', href: '#' },
+  { id: 'r05', num: 'รายงาน 05', name: 'ประมาณการค่าใช้จ่ายในการดำเนินการฝึกอบรม',desc: 'ประมาณการค่าใช้จ่ายในการดำเนินการฝึกอบรม',icon: '⭐', color: 'ic-orange', href: '05.Budgeted-Expenses.html' },
+  { id: 'r06', num: 'รายงาน 06', name: 'สรุปค่าใช้จ่าย (แยกบิล/ใบเสร็จ)',desc: 'ค่าใช้จ่ายแยกแต่ละรายการ',icon: '📋', color: 'ic-teal',href: '06.Sum-Training-Expenses.html' },
+  { id: 'r07', num: 'รายงาน 07', name: 'สรุปค่าใช้จ่ายจากการฝึกอบรม (ใบปะหน้า)',desc: 'ภาพรวมการจัดโครงการ', icon: '📝', color: 'ic-pink',href: '07.Sum-Borrow1.html' },
+  { id: 'r08', num: 'รายงาน 08', name: 'ใบหักล้างยืมเงินทดลอง (บง.27)',desc: 'แบบฟอร์ม บง.27',icon: '🧾', color: 'ic-red',href: '08.Form-Pwa-27.html' },
+  { id: 'r09', num: 'รายงาน 09', name: 'รายละเอียดค่าใช้จ่ายกรณีจัดซื้อ / จัดจ้างพัสดุ (ว.119)',desc: 'แยกตามหัวข้อ / วิทยากร',icon: '⏱️', color: 'ic-slate',href: '09.V199.html' },
+  { id: 'r10', num: 'รายงาน 10', name: 'XXXXXXXXXXXXXXXXXXXX',desc: 'XXX',icon: '📈', color: 'ic-brown',  href: '#' },
+];
+
+/* ── render report buttons ── */
+function renderReports() {
+  const grid = document.getElementById('report-grid');
+  grid.innerHTML = REPORTS.map(r => `
+    <a class="report-btn" href="${r.href}" ${r.href !== '#' ? 'onclick="passData(event, this)"' : 'onclick="dummyClick(event)"'}>
+      <div class="report-icon ${r.color}">${r.icon}</div>
+      <div class="report-text">
+        <div class="r-num">${r.num}</div>
+        <div class="r-name">${r.name}</div>
+        <div class="r-desc">${r.desc}</div>
+      </div>
+      <div class="report-arrow">›</div>
+    </a>
+  `).join('');
+}
+
+/* ── date range sync ── */
+function syncDateRange() {
+  const s = document.getElementById('f_date_start').value;
+  const e = document.getElementById('f_date_end').value;
+  // ถ้ามีวันเดียว ให้ปลายเท่ากับต้น
+  const end = e || s;
+  const combined = s && end ? (s === end ? s : s + '_' + end) : (s || end || '');
+  document.getElementById('f_date').value = combined;
+  const display = document.getElementById('date-range-display');
+  if (s || end) {
+    const startTxt = s ? thDate(s) : '—';
+    const endTxt = end ? thDate(end) : '—';
+    display.style.display = 'block';
+    display.textContent = s === end || !end
+      ? '📅 ' + startTxt
+      : '📅 ' + startTxt + ' — ' + endTxt;
+  } else {
+    display.style.display = 'none';
+  }
+}
+
+/* ── get current form data ── */
+function getFormData() {
+  return {
+    course:     document.getElementById('f_course').value.trim(),
+    batch:      document.getElementById('f_batch').value.trim(),
+    no:         document.getElementById('f_no').value.trim(),
+    date:       document.getElementById('f_date').value,
+    dateStart:  document.getElementById('f_date_start').value,
+    dateEnd:    document.getElementById('f_date_end').value,
+    location:   document.getElementById('f_location').value.trim(),
+  };
+}
+
+/* ── set form data ── */
+function setFormData(d) {
+  document.getElementById('f_course').value   = d.course   || '';
+  document.getElementById('f_batch').value    = d.batch    || '';
+  document.getElementById('f_no').value       = d.no       || '';
+  document.getElementById('f_location').value = d.location || '';
+
+  /* normalize วันที่ที่อาจมาจาก GS เป็น ISO / Date string → YYYY-MM-DD */
+  function toYMD(v) {
+    if (!v) return '';
+    const s = String(v);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+    if (m) return m[1];
+    if (/^\d{5}$/.test(s)) {
+      const dt = new Date(Math.round((+s - 25569) * 86400 * 1000));
+      return dt.toISOString().slice(0,10);
+    }
+    return '';
+  }
+
+  // restore date range
+  const ds = toYMD(d.dateStart);
+  const de = toYMD(d.dateEnd);
+  if (ds) {
+    document.getElementById('f_date_start').value = ds;
+    document.getElementById('f_date_end').value   = de || ds;
+  } else if (d.date && d.date.includes('_')) {
+    const [s, e] = d.date.split('_');
+    document.getElementById('f_date_start').value = toYMD(s);
+    document.getElementById('f_date_end').value   = toYMD(e);
+  } else if (d.date && /^\d{4}-\d{2}-\d{2}$/.test(d.date)) {
+    document.getElementById('f_date_start').value = d.date;
+    document.getElementById('f_date_end').value   = d.date;
+  }
+  syncDateRange();
+}
+
+/* ── pass data via sessionStorage when opening a report ── */
+function passData(e, el) {
+  const d = getFormData();
+
+  // ล้างข้อมูลเก่าเสมอ — ป้องกัน localStorage ค้างจากหลักสูตรก่อนหน้า
+  sessionStorage.removeItem('budgetSlotData');
+  localStorage.removeItem('budgetSlotData');
+
+  // courseData = แหล่งข้อมูลหลักที่ไฟล์ 05/06/07/08/09 อ่าน
+  sessionStorage.setItem('courseData', JSON.stringify(d));
+
+  // ส่ง budgetSlotData เพิ่มเติม (ใน sessionStorage เท่านั้น) ถ้าเจอ slot
+  const slots = getSavedSlots();
+  let idx = d.no ? slots.findIndex(s => s.no && s.no === d.no) : -1;
+  if (idx < 0 && d.course) idx = slots.findIndex(s => s.course === d.course && s.batch === d.batch);
+  if (idx >= 0) {
+    // sessionStorage เท่านั้น — ไม่เขียน localStorage เพื่อป้องกันค้าง
+    sessionStorage.setItem('budgetSlotData', JSON.stringify(slots[idx]));
+  }
+}
+function dummyClick(e) {
+  e.preventDefault();
+  sessionStorage.setItem('courseData', JSON.stringify(getFormData()));
+  showToast('🔗', 'ส่งข้อมูลหลักสูตรแล้ว (รายงานนี้ยังไม่เปิดใช้งาน)');
+}
+
+/* ── SAVE ── */
+const STORAGE_KEY = 'tms_saved_slots';
+
+function getSavedSlots() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+function putSavedSlots(arr) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+/* ============================================================
+   GOOGLE SHEET API
+============================================================ */
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbySJROnBMkxFBNyPvET3DC5ihdCz03OPzvi2xXm6cMQpoPFsi2pAiTQAQIVSDUwQNVZ5w/exec';
+
+async function gsApi(action, data, no) {
+  try {
+    let url = GAS_URL + '?action=' + action;
+    if (no) url += '&no=' + encodeURIComponent(no);
+    const opts = data
+      ? { method: 'POST', body: new URLSearchParams({ action, data: JSON.stringify(data) }) }
+      : { method: 'GET' };
+    const res = await fetch(url, opts);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'API error');
+    return json.data;
+  } catch(e) {
+    console.warn('gsApi error:', e);
+    return null;
+  }
+}
+
+
+/* ── TOGGLE SLOTS PANEL ── */
+let slotsOpen = false;
+function toggleSlots() {
+  slotsOpen = !slotsOpen;
+  const panel = document.getElementById('saved-slots');
+  const label = document.getElementById('load-btn-label');
+  if (slotsOpen) {
+    panel.classList.add('open');
+    label.textContent = 'ซ่อนรายการบันทึก';
+    renderSlots();
+  } else {
+    panel.classList.remove('open');
+    label.textContent = 'โหลดข้อมูลที่บันทึก';
+  }
+}
+
+function renderSlots() {
+  const slots = getSavedSlots();
+  const panel = document.getElementById('saved-slots');
+
+  if (slots.length === 0) {
+    panel.innerHTML = '<div class="empty-slot">ยังไม่มีข้อมูลที่บันทึกไว้</div>';
+    return;
+  }
+
+  panel.innerHTML = slots.map(s => `
+    <div class="slot-item">
+      <div class="slot-info">
+        <div class="slot-name">${s.course || '(ไม่มีชื่อหลักสูตร)'}${s.batch ? ' · รุ่น ' + s.batch : ''}
+          ${s.no ? '<span style="font-size:10px;background:#e0f2fe;color:#075985;border-radius:4px;padding:1px 6px;margin-left:4px;">📋 '+s.no+'</span>' : ''}
+          ${s.budget ? '<span style="font-size:10px;background:#fef3c7;color:#92400e;border-radius:4px;padding:1px 6px;margin-left:4px;">💰 งบประมาณ</span>' : ''}
+          ${(s.actual06||s.actual) ? '<span style="font-size:10px;background:#dcfce7;color:#166534;border-radius:4px;padding:1px 6px;margin-left:2px;">📋 ใบเสร็จ(06)</span>' : ''}
+          ${s.actual07 ? '<span style="font-size:10px;background:#eff6ff;color:#1e40af;border-radius:4px;padding:1px 6px;margin-left:2px;">📝 รายงาน(07)</span>' : ''}
+        </div>
+        <div class="slot-meta">บันทึกเมื่อ ${s.savedAt}${s.date ? ' · วันอบรม ' + thDateRange(s.date, s.dateStart, s.dateEnd) : ''}${(s.actual06||s.actual) ? ' · ใช้จริง(06) ' + Number((s.actual06||s.actual).grandTotal||0).toLocaleString('th-TH',{minimumFractionDigits:2}) + ' บ.' : ''}${s.actual07 ? ' · รวม(07) ' + Number(s.actual07.grandTotal||0).toLocaleString('th-TH',{minimumFractionDigits:2}) + ' บ.' : ''}</div>
+      </div>
+      <div class="slot-actions">
+        <button class="slot-btn load" onclick="loadSlot(${s.id})">โหลด</button>
+        <button class="slot-btn del"  onclick="deleteSlot(${s.id})">ลบ</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadSlot(id) {
+  const slot = getSavedSlots().find(s => s.id === id);
+  if (!slot) return;
+
+  setFormData(slot);
+
+  // บันทึก slot ทั้งก้อนให้ 05.Budgeted-Expenses ดึงไป restore
+  localStorage.setItem('budgetSlotData', JSON.stringify(slot));
+  sessionStorage.setItem('budgetSlotData', JSON.stringify(slot));
+
+  // sync courseData (รวม dateStart/dateEnd) ให้ 05, 06, 07
+  const cd = {
+    course: slot.course, batch: slot.batch, no: slot.no,
+    date: slot.date, dateStart: slot.dateStart||'', dateEnd: slot.dateEnd||'',
+    location: slot.location
+  };
+  sessionStorage.setItem('courseData', JSON.stringify(cd));
+
+  // sync actual07 ถ้ามี
+  if (slot.actual07) {
+    sessionStorage.setItem('actual07Data', JSON.stringify(slot.actual07));
+  }
+
+  // legacy budgetData sync
+  if (slot.budget) {
+    const bStr = JSON.stringify(slot.budget);
+    localStorage.setItem('budgetData', bStr);
+    sessionStorage.setItem('budgetData', bStr);
+  }
+
+  // อัปเดต summary panel ทันที — เรียกหลัง setFormData ใส่ f_no แล้ว
+  loadBudgetPanel();
+
+  // แสดง popup ยืนยัน
+  showLoadPopup(slot);
+  toggleSlots();
+}
+
+function showLoadPopup(slot) {
+  let pop = document.getElementById('load-popup');
+  if (!pop) {
+    pop = document.createElement('div');
+    pop.id = 'load-popup';
+    pop.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;
+      justify-content:center;z-index:9999;`;
+    document.body.appendChild(pop);
+  }
+  
+  // ดึงข้อมูลและกำหนดค่าเริ่มต้นกรณีไม่มีข้อมูล (Fallback)
+  const courseNo = slot.no || '—';
+  const courseDate = slot.date ? thDateRange(slot.date, slot.dateStart, slot.dateEnd) : '—';
+  const courseLocation = slot.location || '—';
+  
+  // จัดการส่วนงบประมาณรวม (ถ้าไม่มีให้แสดง 0.00)
+  const budgetAmt = slot.budget && slot.budget.grandTotal ? Number(slot.budget.grandTotal) : 0;
+  const budgetText = budgetAmt > 0 
+    ? `<strong>${budgetAmt.toLocaleString('th-TH', {minimumFractionDigits:2})} บาท</strong>`
+    : `<span style="color:#b45309;">0.00 บาท (ไม่มีข้อมูลงบ)</span>`;
+
+  // จัดการส่วนค่าใช้จ่ายใบเสร็จรวม (ถ้าไม่มีให้แสดง 0.00)
+  const actualSrc = slot.actual06 || slot.actual || {};
+  const actualAmt = actualSrc.grandTotal ? Number(actualSrc.grandTotal) : 0;
+  const actualText = actualAmt > 0
+    ? `<strong>${actualAmt.toLocaleString('th-TH', {minimumFractionDigits:2})} บาท</strong>`
+    : `<span style="color:#6b7280;">0.00 บาท (ไม่มีข้อมูลใบเสร็จ)</span>`;
+
+  pop.innerHTML = `
+    <div style="background:#fff;border-radius:14px;padding:28px 32px;max-width:480px;width:92%;
+      box-shadow:0 20px 60px rgba(0,0,0,0.2);font-family:'Noto Sans Thai',sans-serif;max-height:85vh;overflow-y:auto;">
+      <div style="font-size:32px;text-align:center;margin-bottom:12px;">📂</div>
+      <h3 style="font-size:16px;font-weight:700;text-align:center;margin-bottom:6px;color:#0f1923;">
+        โหลดข้อมูลเรียบร้อย</h3>
+      <p style="font-size:13px;color:#5a6a7a;text-align:center;margin-bottom:16px;">
+        ${slot.course || '(ไม่มีชื่อ)'}${slot.batch ? ' · รุ่น ' + slot.batch : ''}</p>
+      
+      <div style="background:#f5f2ee;border-radius:8px;padding:12px 16px;font-size:12px;
+        color:#2c3e50;line-height:2;margin-bottom:12px;">
+        <div>📋 เลขที่หลักสูตร: <strong>${courseNo}</strong></div>
+        <div>📅 วันอบรม: ${courseDate}</div>
+        <div>📍 สถานที่: ${courseLocation}</div>
+        <div>💰 งบประมาณรวม: ${budgetText}</div>
+      </div>
+      
+      <div style="padding:12px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#166534">
+          <span>🧾 ค่าใช้จ่ายตามใบเสร็จรวม:</span>
+          <span>${actualText}</span>
+        </div>
+      </div>
+      
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
+        <button onclick="document.getElementById('load-popup').style.display='none'"
+          style="padding:10px 32px;border-radius:8px;background:var(--ink);color:#fff;border:none;
+          font-family:'Noto Sans Thai',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+          ตกลง
+        </button>
+      </div>
+    </div>`;
+    
+  pop.style.display = 'flex';
+}
+
+function thDate(iso) {
+  if (!iso) return '';
+  try {
+    const [y, m, d] = iso.split('-');
+    const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    return `${parseInt(d)} ${months[parseInt(m)-1]} ${parseInt(y)+543}`;
+  } catch { return iso; }
+}
+
+function thDateRange(date, dateStart, dateEnd) {
+  // ถ้ามี dateStart/dateEnd ให้ใช้ค่านั้น
+  const s = dateStart || (date && date.includes('_') ? date.split('_')[0] : date);
+  const e = dateEnd   || (date && date.includes('_') ? date.split('_')[1] : date);
+  if (!s) return '';
+  if (!e || s === e) return thDate(s);
+  return thDate(s) + ' – ' + thDate(e);
+}
+
+
+/* ── BUDGET DATA (จาก 05.Budgeted-Expenses.html) ── */
+function fmtB(n) {
+  if (!n) return '—';
+  return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function loadBudgetPanel() {
+  const no = (document.getElementById('f_no')?.value || '').trim();
+  const grid  = document.getElementById('budget-grid');
+  const panel = document.getElementById('budget-panel');
+  if (!panel || !grid) return;
+
+  // แสดง panel ตลอดเวลา
+  panel.classList.add('visible');
+
+  if (!no) {
+    grid.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:13px;padding:28px 0;">📋 อยู่ระหว่างรอกรอกข้อมูล — กรุณากรอกเลขที่หลักสูตรเพื่อโหลดข้อมูล</div>';
+    return;
+  }
+  grid.innerHTML = '<div style="text-align:center;color:#6b7280;font-size:13px;padding:24px;">⏳ กำลังโหลดข้อมูล...</div>';
+
+  gsApi('getByNo', null, no).then(gsRow => {
+    if (!gsRow || (!gsRow.course && !gsRow.budget)) {
+      grid.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:13px;padding:24px;">ไม่พบข้อมูลเลขที่หลักสูตร: ' + no + '</div>';
+      return;
+    }
+    const gb = gsRow.budget   || {};
+    const g6 = gsRow.actual06 || null;
+    const g7 = gsRow.actual07 || null;
+    const cr = gsRow.course || {};
+    const slot = {
+      no,
+      budget  : gb,
+      speakers: gb.spkJson ? (typeof gb.spkJson === 'string' ? JSON.parse(gb.spkJson) : gb.spkJson) : {},
+      actual06: g6,
+      actual07: g7 ? {
+        ...g7,
+        spkActual: typeof g7.spkActualJson === 'string'
+          ? JSON.parse(g7.spkActualJson || '{}')
+          : (g7.spkActualJson || {})
+      } : null,
+      pdf_05: cr.pdf_05 || '',
+      pdf_06: cr.pdf_06 || '',
+      pdf_07: cr.pdf_07 || '',
+    };
+    _renderBudgetPanel(slot);
+  }).catch(() => {
+    grid.innerHTML = '<div style="text-align:center;color:#ef4444;font-size:13px;padding:24px;">⚠️ ไม่สามารถเชื่อมต่อ Google Sheet ได้</div>';
+  });
+}
+
+
+function _renderBudgetPanel(slot) {
+  if (!slot) return;
+  const panel = document.getElementById('budget-panel');
+  const grid  = document.getElementById('budget-grid');
+  if (!panel || !grid) return;
+
+  const b   = slot.budget   || {};
+  const sp  = slot.speakers || {};
+  const a06 = slot.actual06 || slot.actual || null;
+  const a07 = slot.actual07 || null;
+
+  /* ── 1. ประมาณการค่าใช้จ่ายทั้งหมด (จาก 05) ── */
+  const budgetTotal = b.budgetTotal || b.grandTotal || 0;  // budgetTotal = ชื่อ column จริงใน sheet budget
+
+  /* ── 2. จำนวนเงินยืมทดลองจ่าย ──
+     ⚠️ แก้ไข: เดิมอ่านจาก b.gorTotal ตรงๆ แต่หลังไฟล์ 05 เพิ่มหมวด "วิทยากรภายใน"
+     และ "ค่าเดินทางประธานในพิธี" เข้ามา ปรากฏว่า computeBudget() ใน 05 ดัน gorTotal
+     ที่บันทึกลงชีตให้รวม 2 หมวดนี้เข้าไปด้วย ทั้งที่ในเอกสารจริง (ข้อความ "1. ยืมเงินทดลองจ่าย
+     ข้อ ก. (1. - x.)" ที่พิมพ์ในรายงาน 05) ระบุชัดเจนว่า "ไม่รวม" 2 หมวดนี้ เพราะเป็นเงินที่
+     โอนตรงให้หน่วยงานต้นสังกัดของวิทยากร/ประธาน ไม่ใช่เงินยืมทดลองจ่ายของผู้จัดฝึกอบรม
+     จึงเปลี่ยนมาคำนวณจากคอลัมน์ย่อยจริงในชีต budget แทน ให้ตรงกับตัวเลขที่พิมพ์ในเอกสาร 05 */
+  const borrowAmt = (Number(b.sec1)||0) + (Number(b.sec2)||0)
+                   + (Number(b.secLump)||0) + (Number(b.secVenue)||0)
+                   + (Number(b.sec3)||0)    + (Number(b.sec4)||0)
+                   + (Number(b.sec5)||0)    + (Number(b.sec6)||0); // sec5=secExt1, sec6=secExt2
+
+  /* ── 3. ชื่อวิทยากร/บริษัท (จาก speakers) ──
+     ⚠️ แก้ไข: เดิมอ่านจาก sp[cas] โดย cas เป็น 'A'/'B'/'C' ตาม payType/hasExpense
+     ซึ่งเป็นโครงสร้างข้อมูลเก่า แต่ speakersExtra ปัจจุบันที่ 05 บันทึกจริง (ผ่าน spkJson)
+     เก็บรายชื่อวิทยากรภายนอกไว้ที่ key "EXT" เพียง key เดียวเท่านั้น — ไม่มี sp.A/sp.B/sp.C
+     และไม่มี sp.hasExpense อีกต่อไป จึง spkList เป็น [] เสมอ (ชื่อวิทยากรภายนอกไม่ขึ้น) ── */
+  const spkNames = [];
+  const spkList = Array.isArray(sp.EXT) ? sp.EXT : [];
+  spkList.forEach(s => { if (s && s.name) spkNames.push(s.name); });
+  // วิทยากรภายใน (ถ้ามี)
+  const hasInt = b.secInternal > 0;
+
+  /* ── 4. ค่าใช้จ่ายเกิดจริงทั้งหมด (ก.+ข.) — ดึงจาก 06 ก่อน ถ้ามี 07 ให้ใช้ 07 แทน ── */
+  let actualTotal = null;
+  if (a06 && (a06.grandTotal || 0) > 0) actualTotal = a06.grandTotal;
+  if (a07 && (a07.grandTotal || 0) > 0) actualTotal = a07.grandTotal; // 07 override
+
+  /* ── 5. ค่าใช้จ่ายรวม ก. (ใช้จริง) — ดึงจาก 07 fields ก่อน ถ้าไม่มีให้คำนวณจากคอลัมน์จริงใน 06 ── */
+  let actualGorA = null;
+
+  if (a07 && a07.grandTotal > 0) {
+    // มีข้อมูลจาก 07 — คำนวณ ก. จาก fields โดยตรง
+    const avf = k => parseFloat(a07[k] || 0);
+    const spkA07 = a07.spkActual || {};
+    const spkSum = (spkA07.A||[]).reduce((s,x)=>s+(x.aAmt||0),0)
+                 + (spkA07.B||[]).reduce((s,x)=>s+(x.aAmt||0),0)
+                 + (spkA07.C||[]).reduce((s,x)=>s+(x.aHotel||0)+(x.aTravel||0)+(x.aAmt||0),0);
+    const intSum = avf('a_in_1')+avf('a_in_2')+avf('a_in_3')+avf('a_in_payroll');
+    actualGorA = avf('a_1_1')+avf('a_1_2')
+               + avf('a_2_1')
+               + avf('a_3_1')+avf('a_3_2')+avf('a_3_3')
+               + avf('a_4_1')+avf('a_4_2')+avf('a_4_3')
+               + spkSum;
+  } else if (a06) {
+    // ไม่มี 07 — คำนวณจากคอลัมน์จริงที่ 06 บันทึกลงชีต (sec1+sec2+secLump+secVenue+sec3+sec4+secExt)
+    // ⚠️ แก้ไข: เดิมอ่านจาก a06.bySection ซึ่งเป็นแค่ state ชั่วคราวตอนคีบิล ไม่เคยถูกบันทึกลงชีตจริง
+    // จึงได้ 0 เสมอ — เปลี่ยนมาอ่านจากคอลัมน์ที่ 06 บันทึกจริงแทน (ไม่รวมวิทยากรภายใน/ประธานฯ
+    // เพราะ 2 หมวดนี้ไม่ต้องคีบิล งบประมาณ = ใช้จริงเสมออยู่แล้ว)
+    actualGorA = (Number(a06.sec1)||0) + (Number(a06.sec2)||0)
+               + (Number(a06.secLump)||0) + (Number(a06.secVenue)||0)
+               + (Number(a06.sec3)||0)    + (Number(a06.sec4)||0)
+               + (Number(a06.secExt)||Number(a06.sec5)||0);
+  }
+
+  /* ── 6. เงินคืน = เงินยืม ก. − ใช้จริง ก. ── */
+  const refund = (actualGorA !== null && borrowAmt > 0) ? (borrowAmt - actualGorA) : null;
+
+  /* ── BUILD CARDS ── */
+  const fmt = n => (n !== null && n !== undefined)
+    ? Number(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' บาท'
+    : '<span style="color:#9ca3af;font-size:14px;">รอข้อมูล</span>';
+
+  const noDataBadge = '<span class="sc-badge no-data">รอข้อมูลจากรายงาน 06</span>';
+  const hasBudget = budgetTotal > 0;
+  const hasActual = actualTotal !== null;
+
+  // Speaker display
+  const spkHTML = spkNames.length
+    ? spkNames.map(n => `<div class="sc-spk">👤 ${n}</div>`).join('')
+    : '<span style="color:#9ca3af;font-size:12px;">รอข้อมูลจากรายงาน 05</span>';
+
+  grid.innerHTML = `
+    <div class="sum-card green">
+      <div class="sc-num">1</div>
+      <div class="sc-label">ประมาณการค่าใช้จ่ายทั้งหมด</div>
+      <div class="sc-value">${hasBudget ? fmt(budgetTotal) : '<span style="color:#9ca3af;font-size:14px;">รอข้อมูลจากไฟล์ 05</span>'}</div>
+      ${hasBudget ? `<div class="sc-sub">รวม ก.+ข. จากรายงาน 05</div>` : ''}
+    </div>
+
+    <div class="sum-card blue">
+      <div class="sc-num">2</div>
+      <div class="sc-label">จำนวนเงินยืมทดลองจ่าย</div>
+      <div class="sc-value">${hasBudget ? fmt(borrowAmt) : '<span style="color:#9ca3af;font-size:14px;">รอข้อมูลจากไฟล์ 05</span>'}</div>
+      ${hasBudget ? `<div class="sc-sub">รวม ก.</div>` : ''}
+    </div>
+
+    <div class="sum-card purple">
+      <div class="sc-num">3</div>
+      <div class="sc-label">ชื่อวิทยากร / บริษัท</div>
+      ${spkHTML}
+      ${hasInt ? '<div class="sc-spk">🏢 มีวิทยากรภายใน</div>' : ''}
+    </div>
+
+    <div class="sum-card${hasActual ? '' : ' red'}">
+      <div class="sc-num">4</div>
+      <div class="sc-label">ค่าใช้จ่ายเกิดจริงทั้งหมด</div>
+      <div class="sc-value">${hasActual ? fmt(actualTotal) : noDataBadge}</div>
+      ${hasActual ? `<div class="sc-sub">ใช้จริงรวมทั้ง ก. และ ข.</div>` : ''}
+    </div>
+
+    <div class="sum-card${actualGorA !== null ? ' teal' : ' red'}">
+      <div class="sc-num">5</div>
+      <div class="sc-label">ค่าใช้จ่ายรวม ก. (ใช้จริง)</div>
+      <div class="sc-value">${actualGorA !== null ? fmt(actualGorA) : noDataBadge}</div>
+      ${actualGorA !== null ? `<div class="sc-sub">ใช้จริงรวม ก. (ค่าดำเนินการ)</div>` : ''}
+    </div>
+
+    <div class="sum-card${refund !== null ? ' full' : ' red'}">
+      <div class="sc-num">6</div>
+      <div class="sc-label">เงินคืน (เงินคงเหลือของรวมเงิน ก.)</div>
+      <div class="sc-value">${refund !== null
+        ? `<span style="color:${refund >= 0 ? '#059669' : '#ef4444'}">${fmt(refund)}</span>`
+        : noDataBadge}</div>
+      ${refund !== null
+        ? `<div class="sc-sub">${refund >= 0 ? '✅ คืนเงินยืม' : '⚠️ เกินงบ ก.'} · ยืม ${fmt(borrowAmt)} − ใช้จริง ก. ${fmt(actualGorA)}</div>`
+        : ''}
+    </div>
+  `;
+
+  // timestamp
+  const ts = b.savedAt || (a06 && a06.savedAt) || (a07 && a07.savedAt);
+  if (ts) {
+    try {
+      const d = new Date(ts);
+      document.getElementById('budget-saved-at').textContent =
+        'อัปเดต ' + d.toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
+    } catch {}
+  }
+
+  panel.classList.add('visible');
+}
+
+function clearBudget() {
+  sessionStorage.removeItem('budgetData');
+  localStorage.removeItem('budgetData');
+  sessionStorage.removeItem('budgetSlotData');
+  localStorage.removeItem('budgetSlotData');
+  const grid = document.getElementById('budget-grid');
+  if (grid) grid.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:13px;padding:28px 0;">📋 อยู่ระหว่างรอกรอกข้อมูล — กรุณากรอกเลขที่หลักสูตรเพื่อโหลดข้อมูล</div>';
+  showToast('🗑️', 'ล้างข้อมูลสรุปแล้ว');
+}
+
+/* ── INIT ── */
+renderReports();
+
+(function init() {
+  // 1. ตรวจ URL param ?run=XXXXX (จาก link เก่า)
+  const urlParams = new URLSearchParams(window.location.search);
+  const runParam = urlParams.get('run');
+
+  // 2. โหลด courseData จาก sessionStorage
+  let courseData = null;
+  const prev = sessionStorage.getItem('courseData');
+  if (prev) { try { courseData = JSON.parse(prev); } catch {} }
+
+  // 3. ถ้ามี run param แต่ไม่มี courseData หรือ no ไม่ตรง → ดึงจาก GS
+  if (runParam && (!courseData || courseData.no !== runParam)) {
+    // set no ก่อนเพื่อให้ card แสดง
+    courseData = courseData || {};
+    courseData.no = runParam;
+    courseData._fromCourseList = true;
+    // async fetch จาก GS
+    gsApi('getByNo', null, runParam).then(gsRow => {
+      if (gsRow && gsRow.course && gsRow.course.course) {
+        const cr = gsRow.course;
+        const dateCombo = cr.dateStart && cr.dateEnd && cr.dateStart !== cr.dateEnd
+          ? cr.dateStart + '_' + cr.dateEnd : (cr.dateStart || '');
+        setFormData({ course: cr.course, batch: cr.batch, no: runParam,
+          date: dateCombo, dateStart: cr.dateStart||'', dateEnd: cr.dateEnd||'',
+          location: cr.location||'', _fromCourseList: true });
+        applyLockedMode(true);
+        loadBudgetPanel();
+        sessionStorage.setItem('courseData', JSON.stringify({
+          course: cr.course, batch: cr.batch, no: runParam,
+          date: dateCombo, dateStart: cr.dateStart||'', dateEnd: cr.dateEnd||'',
+          location: cr.location||'', _fromCourseList: true
+        }));
+      }
+    });
+  }
+
+  // 4. ใส่ข้อมูลลงฟอร์ม
+  if (courseData) {
+    setFormData(courseData);
+    if (courseData._fromCourseList) {
+      applyLockedMode(true);
+    }
+  }
+  syncDateRange();
+
+  // 5. โหลด budget panel ถ้ามี no
+  const no = document.getElementById('f_no')?.value?.trim();
+  if (no) loadBudgetPanel();
+
+  // 6. แสดง budget-panel เสมอ (แม้ไม่มีข้อมูล)
+  ensurePanelVisible();
+})();
+
+/* ── แสดง budget-panel เสมอ (ถ้าไม่มีข้อมูลให้แสดง placeholder) ── */
+function ensurePanelVisible() {
+  const panel = document.getElementById('budget-panel');
+  const grid  = document.getElementById('budget-grid');
+  if (!panel || !grid) return;
+  panel.classList.add('visible');
+  if (!grid.innerHTML.trim()) {
+    grid.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:13px;padding:28px 0;">📋 อยู่ระหว่างรอกรอกข้อมูล — กรุณากรอกเลขที่หลักสูตรเพื่อโหลดข้อมูล</div>';
+  }
+}
+</script>
+</body>
+</html>
